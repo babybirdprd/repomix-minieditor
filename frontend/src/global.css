@@ -29,3 +29,12 @@ button, input, select, textarea {
   background: #2a2d36;
   border-radius: 4px;
 }
+
+/* Split pane gutters */
+.gutter {
+  background-color: #2a2d36;
+  cursor: col-resize;
+}
+.gutter.gutter-horizontal {
+  width: 8px;
+}

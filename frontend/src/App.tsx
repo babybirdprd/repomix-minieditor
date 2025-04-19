@@ -6,6 +6,7 @@ import { HiOutlineDocument, HiOutlineFolder, HiOutlineX, HiOutlinePlus } from 'r
 import { DEFAULT_REPOMIX_CONFIG, RepomixConfigOptions } from './repomixConfigSchema';
 import { FolderPickerModal } from './FolderPickerModal';
 import './global.css';
+import Split from 'react-split';
 
 const PROVIDERS = [
   { value: 'openai', label: 'OpenAI Compatible' },
@@ -52,6 +53,7 @@ export default function App() {
   const [editorExtensions, setEditorExtensions] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, port?: number, cwd?: string, env?: string } | null>(null);
   const [pickerOpen, setPickerOpen] = useState<null | 'project' | 'app' | 'docs'>(null);
+  const [loadingFile, setLoadingFile] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -73,10 +75,13 @@ export default function App() {
 
   useEffect(() => {
     if (selectedFile && backendUrl && projectPath) {
-      // Always send rootDir for correct backend file resolution
+      setLoadingFile(true);
       fetch(`${backendUrl}/api/file?path=${encodeURIComponent(selectedFile)}&rootDir=${encodeURIComponent(projectPath)}`)
         .then(res => res.json())
-        .then(data => setFileContent(data.content || ''));
+        .then(data => {
+          setFileContent(data.content || '');
+          setLoadingFile(false);
+        });
       fetch(`${backendUrl}/api/history?path=${encodeURIComponent(selectedFile)}`)
         .then(res => res.json())
         .then(data => setHistory(data.history || []));
@@ -85,9 +90,13 @@ export default function App() {
 
   useEffect(() => {
     if (!selectedFile || !backendUrl || !projectPath) return;
+    setLoadingFile(true);
     fetch(`${backendUrl}/api/file?path=${encodeURIComponent(selectedFile)}&rootDir=${encodeURIComponent(projectPath)}`)
       .then(res => res.json())
-      .then(data => setFileContent(data.content ?? ''));
+      .then(data => {
+        setFileContent(data.content ?? '');
+        setLoadingFile(false);
+      });
   }, [selectedFile, backendUrl, projectPath]);
 
   useEffect(() => {
@@ -200,9 +209,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-base-200 text-base-content font-sans">
-      <div className="flex h-screen">
+      <Split className="flex h-screen" direction="horizontal" gutterSize={8} minSize={[200,200,200]} sizes={[20,60,20]}
+             gutterAlign="center" snapOffset={30}>
         {/* Sidebar / Explorer */}
-        <aside className="w-96 bg-base-300 border-r border-base-200 flex flex-col p-4 gap-2 shadow-xl min-h-[80vh]">
+        <aside className="w-96 resize-x overflow-auto min-w-[200px] max-w-[600px] bg-base-300 border-r border-base-200 flex flex-col p-4 gap-2 shadow-xl min-h-[80vh]">
           <div className="text-xl font-bold mb-4 tracking-tight">Mini IDE</div>
           <div className="mb-2">
             <button className="btn btn-sm btn-primary w-full mb-1" onClick={() => backendUrl && connectionStatus?.connected && openPicker('project')} disabled={!backendUrl || !connectionStatus?.connected}>
@@ -247,7 +257,12 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 relative">
+                  {loadingFile && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-base-100 z-10">
+                      <span className="loading loading-spinner loading-lg"></span>
+                    </div>
+                  )}
                   <CodeMirror
                     value={fileContent}
                     height="100%"
@@ -258,7 +273,7 @@ export default function App() {
                   />
                 </div>
                 <div className="flex justify-end mt-4">
-                  <button className="btn btn-primary" onClick={handleFileSave}>Save</button>
+                  <button className="btn btn-primary" onClick={handleFileSave} title="Save file (Ctrl+S)">Save</button>
                 </div>
               </div>
             </div>
@@ -267,7 +282,7 @@ export default function App() {
           )}
         </main>
         {/* AI Prompt Control Panel (right sidebar) */}
-        <aside className="w-80 bg-base-300 border-l border-base-200 flex flex-col p-4 gap-2 shadow-xl">
+        <aside className="w-80 resize-x overflow-auto min-w-[200px] max-w-[600px] bg-base-300 border-l border-base-200 flex flex-col p-4 gap-2 shadow-xl">
           <div className="text-lg font-bold mb-4">AI Prompt Control Panel</div>
           <form className="flex flex-col gap-2">
             <label className="label" htmlFor="model">Model</label>
@@ -282,7 +297,7 @@ export default function App() {
             <input id="base-url" className="input input-bordered" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" />
             <label className="label" htmlFor="prompt">Prompt</label>
             <textarea id="prompt" className="textarea textarea-bordered" value={prompt} onChange={e => setPrompt(e.target.value)} rows={3} placeholder="Enter your prompt..." />
-            <button type="button" className="btn btn-primary mt-2 flex items-center justify-center" onClick={handleSend} disabled={loading}>
+            <button type="button" className="btn btn-primary mt-2 flex items-center justify-center" onClick={handleSend} disabled={loading} title="Send prompt (Ctrl+Enter)">
               {loading && <span className="loading loading-spinner loading-xs mr-2"></span>}
               Send Prompt
             </button>
@@ -299,7 +314,7 @@ export default function App() {
             </div>
           </form>
         </aside>
-      </div>
+      </Split>
       {backendUrl && connectionStatus?.connected && (
         <FolderPickerModal
           backendUrl={backendUrl}
