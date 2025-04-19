@@ -1,0 +1,15 @@
+{
+  "style": "xml",
+  "output": "temp/repomix.xml",
+  "compress": false,
+  "include": [
+    "src/**/*.js"
+  ],
+  "ignore": [
+    "node_modules",
+    "temp"
+  ],
+  "outputShowLineNumbers": false,
+  "noFileSummary": false,
+  "noDirectoryStructure": false
+}

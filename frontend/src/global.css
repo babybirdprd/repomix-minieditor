@@ -1,0 +1,31 @@
+body {
+  background: #181a20;
+  color: #f3f3f3;
+}
+
+#root, html {
+  background: #181a20;
+  color: #f3f3f3;
+}
+
+/* Make sure all main containers are dark */
+.App, .main, .container, .explorer, .sidebar, .editor {
+  background: #181a20 !important;
+  color: #f3f3f3 !important;
+}
+
+/* Remove white backgrounds from buttons and inputs */
+button, input, select, textarea {
+  background: #23272e !important;
+  color: #f3f3f3 !important;
+  border: 1px solid #2a2d36;
+}
+
+::-webkit-scrollbar {
+  background: #23272e;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2d36;
+  border-radius: 4px;
+}

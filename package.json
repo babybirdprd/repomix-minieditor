@@ -1,0 +1,11 @@
+{
+  "name": "misaki-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Monorepo for misaki AI orchestrator (frontend + backend)",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "packageManager": "pnpm@10.8.1"
+}
