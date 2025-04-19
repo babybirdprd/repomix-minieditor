@@ -44,13 +44,42 @@ export async function writeFileContent(filePath: string, content: string): Promi
  * @param repoPath - The root path of the repository to apply changes within.
  */
 export async function applyCodeChanges(fileChanges: Record<string, string>, repoPath: string): Promise<void> {
+  const resolveFilePath = async (repoRoot: string, filePath: string): Promise<string | null> => {
+    const absPath = path.join(repoRoot, filePath);
+    try {
+      if (await fs.stat(absPath).then(stat => stat.isFile()).catch(() => false)) return absPath;
+    } catch {}
+    // Fallback: search for matching filename anywhere in repo
+    const matches: string[] = [];
+    async function searchDir(dir: string) {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) await searchDir(full);
+        else if (entry.name === path.basename(filePath)) matches.push(full);
+      }
+    }
+    await searchDir(repoRoot);
+    if (matches.length === 1) return matches[0];
+    if (matches.length > 1) {
+      console.warn(`Multiple matches for ${filePath}:`, matches);
+      // Choose the shortest path, or prompt user, or pick first
+      return matches.sort((a, b) => a.length - b.length)[0];
+    }
+    return null;
+  };
+
   console.log('Applying code changes...');
   for (const filePath in fileChanges) {
     if (Object.hasOwnProperty.call(fileChanges, filePath)) {
-      const fullPath = path.join(repoPath, filePath);
+      const resolvedPath = await resolveFilePath(repoPath, filePath);
+      const targetPath = resolvedPath || path.join(repoPath, filePath); // fallback: use as given
       const content = fileChanges[filePath];
-      console.log(`Writing changes to: ${fullPath}`);
-      await writeFileContent(fullPath, content);
+      console.log(`Writing changes to: ${targetPath}`);
+      await writeFileContent(targetPath, content);
+      if (!resolvedPath) {
+        console.warn(`File path '${filePath}' did not match existing files. Created new file at: ${targetPath}`);
+      }
     }
   }
   console.log('Code changes applied.');

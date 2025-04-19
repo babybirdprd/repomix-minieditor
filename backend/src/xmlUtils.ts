@@ -58,3 +58,31 @@ export function extractFilesFromRepomixXml(parsedXml: any): Record<string, strin
   console.log(`Extracted ${Object.keys(files).length} files from Repomix XML.`);
   return files;
 }
+
+/**
+ * Extracts file paths and content from <changes><file path><content>...</content></file></changes> XML output.
+ * Used for fallback when AI returns non-repomix XML structure.
+ * @param parsedXml - The parsed JS object from XML.
+ * @returns An object where keys are file paths and values are file contents.
+ */
+export function extractFilesFromSimpleChangesXml(parsedXml: any): Record<string, string> {
+  const files: Record<string, string> = {};
+  try {
+    const fileNodes = parsedXml?.changes?.file;
+    if (fileNodes) {
+      const fileArray = Array.isArray(fileNodes) ? fileNodes : [fileNodes];
+      fileArray.forEach((file: any) => {
+        // Support both <file path="..."> and <file><path>...</path></file>
+        const filePath = file.path || file['@_path'] || (file['$'] && file['$'].path);
+        const fileContent = file.content || '';
+        if (filePath) {
+          files[filePath] = fileContent;
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error extracting files from <changes> XML:', error);
+  }
+  console.log(`Extracted ${Object.keys(files).length} files from <changes> XML.`);
+  return files;
+}

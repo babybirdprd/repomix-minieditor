@@ -45,7 +45,7 @@ export default function App() {
   const [model, setModel] = useState('deepseek-chat');
   const [provider, setProvider] = useState('openai');
   const [apiKey, setApiKey] = useState('');
-  const [baseUrl, setBaseUrl] = useState('https://api.openai.com/v1');
+  const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1');
   const [prompt, setPrompt] = useState('');
   // Repomix config state for UI
   const [repomixConfig, setRepomixConfig] = useState<RepomixConfigOptions>({ ...DEFAULT_REPOMIX_CONFIG });

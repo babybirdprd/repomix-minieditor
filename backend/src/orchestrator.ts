@@ -2,7 +2,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { generateCompressedCodebaseContext, generateTargetedUncompressedContext } from './repomixHandler.js';
 import { readFileContent, applyCodeChanges } from './fileUtils.js';
-import { parseXmlString, extractFilesFromRepomixXml } from './xmlUtils.js';
+import { parseXmlString, extractFilesFromRepomixXml, extractFilesFromSimpleChangesXml } from './xmlUtils.js';
 import OpenAI from 'openai';
 import { logger } from './logger.js';
 import crypto from 'crypto';
@@ -81,7 +81,7 @@ export async function orchestrateCodeModification({ repoPath, docsPath, userTask
   const targetedContext = await readFileContent(TARGETED_CONTEXT_OUTPUT);
 
   // Step 4: AI Call 2 - Generate code changes (XML)
-  const ai2Prompt = `You are an AI codebase assistant. Based on the original task and the following uncompressed file contents and documentation, generate the necessary code modifications or new code. Respond ONLY with a single XML document, no explanation, no markdown, no code block, just raw XML in this format:\n\n<changes>\n  <file path=\"path/to/modified/file.js\">\n    <content>\n      // Complete content of the modified file\n    </content>\n  </file>\n  <file path=\"path/to/new/file.js\">\n     <content>\n       // Complete content of the new file\n     </content>\n  </file>\n</changes>\n\nUser Task: \"${userTask}\"\nDocumentation:\n${documentationContent}\nTargeted File Contents (Uncompressed XML):\n${targetedContext}`;
+  const ai2Prompt = `You are an AI codebase assistant. Based on the original task and the following uncompressed file contents and documentation, generate the necessary code modifications or new code.\n\nIMPORTANT:\n- Return the complete content of the modified file(s), even if you only changed one line.\n- Do NOT rewrite unrelated code or make unnecessary changes.\n- Only change what is required to accomplish the user's task.\n\nRespond ONLY with a single XML document, no explanation, no markdown, no code block, just raw XML in this format:\n\n<changes>\n  <file path=\"path/to/modified/file.js\">\n    <content>\n      // Complete content of the modified file\n    </content>\n  </file>\n  <file path=\"path/to/new/file.js\">\n     <content>\n       // Complete content of the new file\n     </content>\n  </file>\n</changes>\n\nUser Task: \"${userTask}\"\nDocumentation:\n${documentationContent}\nTargeted File Contents (Uncompressed XML):\n${targetedContext}`;
 
   logger.info({ runId, prompt: ai2Prompt }, 'AI Request 2 (generate code changes)');
   const aiResponse2 = await openai.chat.completions.create({
@@ -93,7 +93,14 @@ export async function orchestrateCodeModification({ repoPath, docsPath, userTask
 
   // Step 5: Parse and apply code changes
   const parsedCodeChanges = await parseXmlString(aiResponse2.choices[0].message?.content || '');
-  const filesToApply = extractFilesFromRepomixXml(parsedCodeChanges?.changes);
+
+  // Try both repomix and <changes> XML extraction
+  let filesToApply = extractFilesFromRepomixXml(parsedCodeChanges?.changes);
+  if (!filesToApply || Object.keys(filesToApply).length === 0) {
+    // Fallback: try extracting from <changes> structure
+    filesToApply = extractFilesFromSimpleChangesXml(parsedCodeChanges);
+  }
+
   if (Object.keys(filesToApply).length > 0) {
     await applyCodeChanges(filesToApply, repoPath);
     return { success: true, message: 'Code modification workflow completed successfully.' };
