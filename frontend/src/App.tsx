@@ -233,9 +233,19 @@ export default function App() {
           {selectedFile ? (
             <div className="w-full h-full flex flex-col items-center justify-center">
               <div className="w-full max-w-5xl h-[80vh] card bg-base-100 shadow-xl p-4 flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="font-bold text-lg text-base-content/90 truncate" title={selectedFile}>{selectedFile}</div>
-                  <button className="btn btn-error btn-xs" onClick={() => closeTab(selectedFile)}><HiOutlineX /></button>
+                <div className="tabs tabs-boxed mb-2 overflow-x-auto">
+                  {openTabs.map(file => (
+                    <button
+                      key={file}
+                      onClick={() => openFile(file)}
+                      className={`tab ${selectedFile === file ? 'tab-active' : ''}`}>
+                      <span className="truncate max-w-xs">{file}</span>
+                      <HiOutlineX
+                        className="ml-2 text-error"
+                        onClick={e => { e.stopPropagation(); closeTab(file); }}
+                      />
+                    </button>
+                  ))}
                 </div>
                 <div className="flex-1 min-h-0">
                   <CodeMirror
@@ -272,7 +282,10 @@ export default function App() {
             <input id="base-url" className="input input-bordered" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" />
             <label className="label" htmlFor="prompt">Prompt</label>
             <textarea id="prompt" className="textarea textarea-bordered" value={prompt} onChange={e => setPrompt(e.target.value)} rows={3} placeholder="Enter your prompt..." />
-            <button type="button" className="btn btn-primary mt-2" onClick={handleSend} disabled={loading}>Send Prompt</button>
+            <button type="button" className="btn btn-primary mt-2 flex items-center justify-center" onClick={handleSend} disabled={loading}>
+              {loading && <span className="loading loading-spinner loading-xs mr-2"></span>}
+              Send Prompt
+            </button>
             {apiError && <div className="text-error mt-1">{apiError}</div>}
             <div className="mt-2">
               <label className="label">Repomix Config</label>

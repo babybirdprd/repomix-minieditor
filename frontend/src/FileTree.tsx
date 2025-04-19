@@ -41,21 +41,30 @@ export const FileTree: React.FC<FileTreeProps> = ({ onSelect, rootDir, backendUr
   };
 
   const renderTree = (nodes: FileNode[], parent: string = '', level: number = 0) => (
-    <ul className="menu bg-base-200 rounded-box">
+    <ul className="menu bg-base-200 rounded-box w-full">
       {nodes.map(node => (
         <li key={node.path}>
           {node.type === 'directory' ? (
             <>
-              <button className="btn btn-ghost btn-sm flex gap-2 items-center" onClick={() => node.path && toggle(node.path)}>
+              <button
+                className="btn btn-ghost w-full flex gap-2 items-center justify-start"
+                style={{ paddingLeft: `${level * 1}rem` }}
+                onClick={() => node.path && toggle(node.path)}
+              >
                 <HiOutlineFolder />
-                <span className="text-xs">{node.path && expanded[node.path] ? '▼' : '▶'}</span>
+                <span className="text-sm">{node.path && expanded[node.path] ? '▼' : '▶'}</span>
                 <span>{node.name}</span>
               </button>
               {node.path && expanded[node.path] && node.children && renderTree(node.children, node.path, level + 1)}
             </>
           ) : (
-            <button className="btn btn-ghost btn-xs flex gap-2 items-center" onClick={() => node.path && onSelect(node.path)}>
-              <HiOutlineDocument /> <span>{node.name}</span>
+            <button
+              className="btn btn-ghost w-full flex gap-2 items-center justify-start"
+              style={{ paddingLeft: `${level * 1}rem` }}
+              onClick={() => node.path && onSelect(node.path)}
+            >
+              <HiOutlineDocument />
+              <span>{node.name}</span>
             </button>
           )}
         </li>
@@ -64,7 +73,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ onSelect, rootDir, backendUr
   );
 
   return (
-    <div className="p-2">
+    <div className="p-4 h-full overflow-y-auto">
       {renderTree(tree)}
     </div>
   );
