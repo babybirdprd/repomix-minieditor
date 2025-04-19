@@ -203,6 +203,29 @@ app.post('/api/orchestrate', async (req, res) => {
   }
 });
 
+// --- AI Logs Endpoints ---
+const AI_LOG_PATH = path.join(process.cwd(), 'logs', 'ai.log');
+
+// Get AI logs
+app.get('/api/logs/ai', async (req, res) => {
+  try {
+    const content = await fs.readFile(AI_LOG_PATH, 'utf8');
+    res.type('text/plain').send(content);
+  } catch (e: any) {
+    res.status(404).json({ error: 'Log file not found.' });
+  }
+});
+
+// Clear AI logs
+app.delete('/api/logs/ai', async (req, res) => {
+  try {
+    await fs.writeFile(AI_LOG_PATH, '', 'utf8');
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: 'Failed to clear log file.' });
+  }
+});
+
 function startServer(port: number) {
   const server = app.listen(port, () => {
     console.log(`Backend listening on http://localhost:${port}`);

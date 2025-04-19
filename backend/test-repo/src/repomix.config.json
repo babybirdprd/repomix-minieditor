@@ -1,0 +1,19 @@
+{
+  "style": "xml",
+  "output": {
+    "path": "C:\\Users\\Steve Business\\Downloads\\misaki-js-final-with-fallback\\backend\\test-repo\\src\\temp\\targeted_context.xml"
+  },
+  "compress": false,
+  "include": [
+    "animal.js"
+  ],
+  "ignore": {
+    "patterns": [
+      "node_modules",
+      "temp"
+    ]
+  },
+  "outputShowLineNumbers": false,
+  "noFileSummary": false,
+  "noDirectoryStructure": false
+}

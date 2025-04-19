@@ -10,7 +10,7 @@ export async function handlePrompt(req: Request, res: Response) {
   try {
     const openai = new OpenAI({ apiKey, baseURL: baseUrl });
     const chatResponse = await openai.chat.completions.create({
-      model: model || 'gpt-4',
+      model: model || 'deepseek-chat',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2
     });

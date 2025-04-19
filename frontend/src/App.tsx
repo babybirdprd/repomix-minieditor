@@ -7,6 +7,7 @@ import { DEFAULT_REPOMIX_CONFIG, RepomixConfigOptions } from './repomixConfigSch
 import { FolderPickerModal } from './FolderPickerModal';
 import './global.css';
 import Split from 'react-split';
+import LogsPage from './LogsPage';
 
 const PROVIDERS = [
   { value: 'openai', label: 'OpenAI Compatible' },
@@ -41,7 +42,7 @@ export default function App() {
   const [projectPath, setProjectPath] = useState('');
   const [appDir, setAppDir] = useState('');
   const [docsDir, setDocsDir] = useState('');
-  const [model, setModel] = useState('gpt-4');
+  const [model, setModel] = useState('deepseek-chat');
   const [provider, setProvider] = useState('openai');
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('https://api.openai.com/v1');
@@ -54,6 +55,7 @@ export default function App() {
   const [connectionStatus, setConnectionStatus] = useState<{ connected: boolean, port?: number, cwd?: string, env?: string } | null>(null);
   const [pickerOpen, setPickerOpen] = useState<null | 'project' | 'app' | 'docs'>(null);
   const [loadingFile, setLoadingFile] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -286,7 +288,7 @@ export default function App() {
           <div className="text-lg font-bold mb-4">AI Prompt Control Panel</div>
           <form className="flex flex-col gap-2">
             <label className="label" htmlFor="model">Model</label>
-            <input id="model" className="input input-bordered w-full" value={model} onChange={e => setModel(e.target.value)} placeholder="gpt-4" />
+            <input id="model" className="input input-bordered w-full" value={model} onChange={e => setModel(e.target.value)} placeholder="deepseek-chat" />
             <label className="label" htmlFor="provider">Provider</label>
             <select id="provider" className="select select-bordered w-full" value={provider} onChange={e => setProvider(e.target.value)}>
               {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -294,7 +296,7 @@ export default function App() {
             <label className="label" htmlFor="api-key">API Key</label>
             <input id="api-key" className="input input-bordered w-full" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="API Key..." />
             <label className="label" htmlFor="base-url">Base URL</label>
-            <input id="base-url" className="input input-bordered w-full" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" />
+            <input id="base-url" className="input input-bordered w-full" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.deepseek.com/v1" />
             <label className="label" htmlFor="prompt">Prompt</label>
             <textarea id="prompt" className="textarea textarea-bordered w-full" value={prompt} onChange={e => setPrompt(e.target.value)} rows={3} placeholder="Enter your prompt..." />
             <button type="button" className="btn btn-primary mt-2 flex items-center justify-center" onClick={handleSend} disabled={loading} title="Send prompt (Ctrl+Enter)">
@@ -314,6 +316,22 @@ export default function App() {
             </div>
           </form>
         </aside>
+        {/* Logs Button */}
+        <button
+          className="btn btn-neutral mt-4"
+          style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)' }}
+          onClick={() => setShowLogs(true)}
+        >
+          Logs
+        </button>
+        {showLogs && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center">
+            <div className="bg-base-100 max-w-4xl w-full rounded-lg shadow-lg relative">
+              <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setShowLogs(false)}>✕</button>
+              <LogsPage />
+            </div>
+          </div>
+        )}
       </Split>
       {backendUrl && connectionStatus?.connected && (
         <FolderPickerModal

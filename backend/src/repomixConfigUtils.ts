@@ -58,5 +58,19 @@ export async function ensureRepomixConfig(
     console.warn('Repomix config: ignore object structure might be incorrect.');
   }
 
+  // Patch: If repoPath contains a 'src' directory, and include patterns are relative to 'src',
+  // but config is being generated inside 'src', fix include patterns to match files correctly.
+  // This ensures '*.js' matches files in the current directory and subdirectories.
+  if (repoPath.match(/\\src$/i) && Array.isArray(config.include)) {
+    config.include = config.include.map((pattern: string) => {
+      // Replace leading 'src/' or './src/' with '' if present
+      return pattern.replace(/^src\//, '').replace(/^\.\/src\//, '');
+    });
+    // If after replacement it's empty, default to ['**/*.js']
+    if (config.include.length === 0) {
+      config.include = ['**/*.js'];
+    }
+  }
+
   await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
 }
