@@ -286,17 +286,17 @@ export default function App() {
           <div className="text-lg font-bold mb-4">AI Prompt Control Panel</div>
           <form className="flex flex-col gap-2">
             <label className="label" htmlFor="model">Model</label>
-            <input id="model" className="input input-bordered" value={model} onChange={e => setModel(e.target.value)} placeholder="gpt-4" />
+            <input id="model" className="input input-bordered w-full" value={model} onChange={e => setModel(e.target.value)} placeholder="gpt-4" />
             <label className="label" htmlFor="provider">Provider</label>
-            <select id="provider" className="select select-bordered" value={provider} onChange={e => setProvider(e.target.value)}>
+            <select id="provider" className="select select-bordered w-full" value={provider} onChange={e => setProvider(e.target.value)}>
               {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
             <label className="label" htmlFor="api-key">API Key</label>
-            <input id="api-key" className="input input-bordered" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="API Key..." />
+            <input id="api-key" className="input input-bordered w-full" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="API Key..." />
             <label className="label" htmlFor="base-url">Base URL</label>
-            <input id="base-url" className="input input-bordered" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" />
+            <input id="base-url" className="input input-bordered w-full" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" />
             <label className="label" htmlFor="prompt">Prompt</label>
-            <textarea id="prompt" className="textarea textarea-bordered" value={prompt} onChange={e => setPrompt(e.target.value)} rows={3} placeholder="Enter your prompt..." />
+            <textarea id="prompt" className="textarea textarea-bordered w-full" value={prompt} onChange={e => setPrompt(e.target.value)} rows={3} placeholder="Enter your prompt..." />
             <button type="button" className="btn btn-primary mt-2 flex items-center justify-center" onClick={handleSend} disabled={loading} title="Send prompt (Ctrl+Enter)">
               {loading && <span className="loading loading-spinner loading-xs mr-2"></span>}
               Send Prompt
@@ -305,9 +305,9 @@ export default function App() {
             <div className="mt-2">
               <label className="label">Repomix Config</label>
               <div className="flex flex-col gap-1">
-                <input className="input input-bordered" value={repomixConfig.style ?? ''} onChange={e => setRepomixConfig({...repomixConfig, style: e.target.value as 'xml' | 'markdown' | 'plain'})} placeholder="Style (xml, markdown, plain)" />
-                <input className="input input-bordered" value={repomixConfig.include?.join(',') ?? ''} onChange={e => setRepomixConfig({...repomixConfig, include: e.target.value.split(',')})} placeholder="Include Patterns" />
-                <input className="input input-bordered" value={repomixConfig.ignore?.join(',') ?? ''} onChange={e => setRepomixConfig({...repomixConfig, ignore: e.target.value.split(',')})} placeholder="Ignore Patterns" />
+                <input className="input input-bordered w-full" value={repomixConfig.style ?? ''} onChange={e => setRepomixConfig({...repomixConfig, style: e.target.value as 'xml' | 'markdown' | 'plain'})} placeholder="Style (xml, markdown, plain)" />
+                <input className="input input-bordered w-full" value={repomixConfig.include?.join(',') ?? ''} onChange={e => setRepomixConfig({...repomixConfig, include: e.target.value.split(',')})} placeholder="Include Patterns" />
+                <input className="input input-bordered w-full" value={repomixConfig.ignore?.join(',') ?? ''} onChange={e => setRepomixConfig({...repomixConfig, ignore: e.target.value.split(',')})} placeholder="Ignore Patterns" />
                 <label className="flex items-center gap-2"><input type="checkbox" checked={!!repomixConfig.compress} onChange={e => setRepomixConfig({...repomixConfig, compress: e.target.checked})} />Compressed?</label>
               </div>
               {configErrors.length > 0 && <div className="text-error mt-1">{configErrors.join(', ')}</div>}

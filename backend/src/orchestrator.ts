@@ -1,4 +1,5 @@
 import path from 'path';
+import { promises as fs } from 'fs';
 import { generateCompressedCodebaseContext, generateTargetedUncompressedContext } from './repomixHandler.js';
 import { readFileContent, applyCodeChanges } from './fileUtils.js';
 import { parseXmlString, extractFilesFromRepomixXml } from './xmlUtils.js';
@@ -15,8 +16,11 @@ export interface OrchestrateConfig {
 }
 
 export async function orchestrateCodeModification({ repoPath, docsPath, userTask, apiKey, baseUrl, model, repomixConfig }: OrchestrateConfig): Promise<{ success: boolean; message: string }> {
-  const COMPRESSED_CONTEXT_OUTPUT = path.join(repoPath, 'temp', 'compressed_context.xml');
-  const TARGETED_CONTEXT_OUTPUT = path.join(repoPath, 'temp', 'targeted_context.xml');
+  const tempDir = path.join(repoPath, 'temp');
+  await fs.mkdir(tempDir, { recursive: true });
+
+  const COMPRESSED_CONTEXT_OUTPUT = path.join(tempDir, 'compressed_context.xml');
+  const TARGETED_CONTEXT_OUTPUT = path.join(tempDir, 'targeted_context.xml');
   const DOCUMENTATION_FILE = path.join(docsPath, 'api_docs.md');
 
   // Step 1: Generate compressed codebase context (uses repomix.config.json in repoPath)

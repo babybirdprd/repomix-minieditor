@@ -184,8 +184,9 @@ app.post('/api/orchestrate', async (req, res) => {
     // Resolve absolute paths (Windows-safe)
     const root = process.cwd();
     const absProjectRoot = path.resolve(root, projectPath.replace(/^@/, ''));
-    const repoPath = path.join(absProjectRoot, appDir);
-    const docsPath = path.join(absProjectRoot, docsDir);
+    // Resolve appDir and docsDir relative to the resolved project root
+    const repoPath = path.resolve(absProjectRoot, appDir);
+    const docsPath = path.resolve(absProjectRoot, docsDir);
     // Pass repomixConfig to orchestrator, but default to undefined if not provided
     const result = await orchestrateCodeModification({
       repoPath,

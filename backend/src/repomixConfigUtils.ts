@@ -3,10 +3,10 @@ import path from 'path';
 
 export interface RepomixConfigOptions {
   style?: 'xml' | 'markdown' | 'plain';
-  output?: string;
+  output?: string | { path: string };
   compress?: boolean;
   include?: string[];
-  ignore?: string[];
+  ignore?: string[] | { patterns: string[] };
   outputShowLineNumbers?: boolean;
   noFileSummary?: boolean;
   noDirectoryStructure?: boolean;
@@ -32,6 +32,7 @@ export async function ensureRepomixConfig(
   repoPath: string,
   overrides: Partial<RepomixConfigOptions> = {}
 ): Promise<void> {
+  // Use path.join assuming repoPath is already absolute
   const configPath = path.join(repoPath, 'repomix.config.json');
   let config = { ...DEFAULT_REPOMIX_CONFIG, ...overrides };
   try {
@@ -39,5 +40,23 @@ export async function ensureRepomixConfig(
     const parsed = JSON.parse(existing);
     config = { ...config, ...parsed, ...overrides };
   } catch {}
+
+  // Ensure output is an object { path: string }
+  if (typeof config.output === 'string') {
+    config.output = { path: config.output };
+  } else if (config.output && typeof config.output === 'object' && !config.output.path) {
+    // Handle potential existing object structure without 'path'
+    // This case might need adjustment based on actual expected object structure
+    console.warn('Repomix config: output object structure might be incorrect.');
+  }
+
+  // Ensure ignore is an object { patterns: string[] }
+  if (Array.isArray(config.ignore)) {
+    config.ignore = { patterns: config.ignore };
+  } else if (config.ignore && typeof config.ignore === 'object' && !config.ignore.patterns) {
+    // Handle potential existing object structure without 'patterns'
+    console.warn('Repomix config: ignore object structure might be incorrect.');
+  }
+
   await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
 }

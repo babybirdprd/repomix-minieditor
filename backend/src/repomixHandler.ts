@@ -2,6 +2,7 @@
 import { exec } from 'child_process';
 import util from 'util';
 import path from 'path';
+import { promises as fs } from 'fs';
 import { ensureRepomixConfig, RepomixConfigOptions } from './repomixConfigUtils.js';
 const execPromise = util.promisify(exec);
 
@@ -15,8 +16,8 @@ const execPromise = util.promisify(exec);
 export async function runRepomixCommand(command: string, cwd: string): Promise<string> {
   console.log(`Executing Repomix command: repomix ${command} in ${cwd}`);
   try {
-    // Use PowerShell explicitly
-    const { stdout, stderr } = await execPromise(`powershell -Command \"repomix ${command}\"`, { cwd });
+    // Execute repomix directly, relying on the shell to handle paths
+    const { stdout, stderr } = await execPromise(`repomix ${command}`, { cwd });
     if (stderr) {
       console.error(`Repomix stderr: ${stderr}`);
       // Optionally throw on stderr
@@ -40,9 +41,12 @@ export async function generateCompressedCodebaseContext(repoPath: string, output
   // Ensure config exists and merge overrides
   await ensureRepomixConfig(repoPath, { ...configOverrides, output: outputPath, compress: true });
   const configPath = path.join(repoPath, 'repomix.config.json');
-  const command = `-c "${configPath}" -o "${outputPath}" --compress`;
-  await runRepomixCommand(command, repoPath);
-  return outputPath;
+  // Command only needs the config path, as output and compress are set within the config file
+  const command = `-c "${configPath}"`;
+  const stdout = await runRepomixCommand(command, repoPath);
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  await fs.writeFile(outputPath, stdout, 'utf8');
+  return stdout;
 }
 
 /**
@@ -60,7 +64,10 @@ export async function generateTargetedUncompressedContext(repoPath: string, file
   await ensureRepomixConfig(repoPath, { ...configOverrides, output: outputPath, include: filePaths, compress: false });
   const includePatterns = filePaths.join(',');
   const configPath = path.join(repoPath, 'repomix.config.json');
-  const command = `-c "${configPath}" -o "${outputPath}" --include "${includePatterns}"`;
-  await runRepomixCommand(command, repoPath);
-  return outputPath;
+  // Command only needs the config path, as output and include are set within the config file
+  const command = `-c "${configPath}"`;
+  const stdout = await runRepomixCommand(command, repoPath);
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  await fs.writeFile(outputPath, stdout, 'utf8');
+  return stdout;
 }
